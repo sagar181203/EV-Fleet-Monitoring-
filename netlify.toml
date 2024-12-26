@@ -1,0 +1,6 @@
+[build]
+  command = "pip install -r requirements.txt"
+  publish = "templates"
+
+[build.environment]
+  PYTHON_VERSION = "3.8"
