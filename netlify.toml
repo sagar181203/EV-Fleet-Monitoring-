@@ -1,6 +1,12 @@
 [build]
-  command = "pip install -r requirements.txt"
+  base = "/"
   publish = "templates"
+  command = "pip install -r requirements.txt"
 
 [build.environment]
   PYTHON_VERSION = "3.8"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
