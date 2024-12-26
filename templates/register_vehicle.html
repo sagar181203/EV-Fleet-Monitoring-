@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}Register Vehicle{% endblock %}
+
+{% block content %}
+<style>
+    .form-container {
+        width: 100%;
+        max-width: 500px;
+        margin: 20px auto;
+        padding: 30px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        background: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .form-container h1 {
+        text-align: center;
+        color: #2980b9;
+        margin-bottom: 30px;
+        font-size: 28px;
+        width: 100%;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+        width: 80%;
+        text-align: center;
+    }
+
+    .form-container label {
+        margin-bottom: 8px;
+        display: block;
+        font-weight: 600;
+        color: #333;
+        text-align: left;
+    }
+
+    .form-container input {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 5px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 16px;
+        transition: border-color 0.3s ease;
+        box-sizing: border-box;
+    }
+
+    .form-container input:focus {
+        border-color: #3498db;
+        outline: none;
+        box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+    }
+
+    .form-container button {
+        width: 80%;
+        padding: 12px;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+        transition: background 0.3s ease;
+        margin-top: 20px;
+    }
+
+    .form-container button:hover {
+        background: #2980b9;
+    }
+
+    .success-message {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 6px;
+        text-align: center;
+        font-size: 16px;
+        font-weight: 600;
+        background-color: #2ecc71;
+        color: white;
+        width: 80%;
+    }
+
+    .error-message {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 6px;
+        text-align: center;
+        font-size: 16px;
+        font-weight: 600;
+        background-color: #e74c3c;
+        color: white;
+        width: 80%;
+    }
+
+    form {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+</style>
+
+<div class="content">
+    <div class="form-container">
+        <h1>Register Vehicle</h1>
+        <form method="POST">
+            <div class="form-group">
+                <label for="vehicle_name">Vehicle Name:</label>
+                <input type="text" id="vehicle_name" name="vehicle_name" placeholder="Enter vehicle name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="vehicle_number">Vehicle Number:</label>
+                <input type="text" id="vehicle_number" name="vehicle_number" placeholder="Enter vehicle number" required>
+            </div>
+
+            <div class="form-group">
+                <label for="owner_name">Owner Name:</label>
+                <input type="text" id="owner_name" name="owner_name" placeholder="Enter owner name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="battery_status">Battery Status (%):</label>
+                <input type="number" id="battery_status" name="battery_status" placeholder="Enter battery status" required min="0" max="100">
+            </div>
+
+            <div class="form-group">
+                <label for="location">Location:</label>
+                <input type="text" id="location" name="location" placeholder="Enter location" required>
+            </div>
+
+            <div class="form-group">
+                <label for="speed">Speed (km/h):</label>
+                <input type="number" id="speed" name="speed" placeholder="Enter speed" required min="0">
+            </div>
+
+            <button type="submit">Register Vehicle</button>
+        </form>
+        
+        {% if error %}
+        <div class="error-message">
+            {{ error }}
+        </div>
+        {% endif %}
+        
+        {% if success %}
+        <div class="success-message">
+            {{ success }}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

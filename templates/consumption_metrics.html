@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Cost and Consumption Overview</h2>
+    <div class="row">
+        <!-- Summary Cards -->
+        <div class="col-md-3 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Cost</h5>
+                    <h3 class="card-text" id="totalCost">₹0</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Consumption</h5>
+                    <h3 class="card-text" id="totalConsumption">0 kWh</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Average Efficiency</h5>
+                    <h3 class="card-text" id="avgEfficiency">0 kWh/km</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row">
+        <div class="col-md-8 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Cost & Consumption Trends</h5>
+                    <canvas id="consumptionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Fetch consumption data
+    fetch('/api/consumption_data')
+        .then(response => response.json())
+        .then(data => {
+            // Create the chart
+            const ctx = document.getElementById('consumptionChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.timestamps,
+                    datasets: [
+                        {
+                            label: 'Cost (₹)',
+                            data: data.costs,
+                            borderColor: 'rgb(75, 192, 192)',
+                            tension: 0.1,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Consumption (kWh)',
+                            data: data.consumption,
+                            borderColor: 'rgb(255, 99, 132)',
+                            tension: 0.1,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Cost (₹)'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Consumption (kWh)'
+                            },
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Update summary cards
+            const totalCost = data.costs.reduce((a, b) => a + b, 0);
+            const totalConsumption = data.consumption.reduce((a, b) => a + b, 0);
+            
+            document.getElementById('totalCost').textContent = `₹${totalCost.toFixed(2)}`;
+            document.getElementById('totalConsumption').textContent = `${totalConsumption.toFixed(2)} kWh`;
+            document.getElementById('avgEfficiency').textContent = 
+                `${(totalConsumption / data.timestamps.length).toFixed(2)} kWh/day`;
+        });
+});
+</script>
+{% endblock %}

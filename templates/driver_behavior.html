@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+.table td {
+    color: #000 !important;
+}
+.card-body {
+    height: 270px; /* Adjusted height for better fit */
+}
+.chart-container {
+    float: left;
+    width: 48%;
+}
+</style>
+<div class="container mt-4">
+    <h2>Driver Behavior Analysis</h2>
+    <div class="row">
+        <div class="chart-container">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Driver Performance Scores</h5>
+                </div>
+                <div class="card-body" style="position: relative;">
+                    <canvas id="driverScoresChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="chart-container" style="float: right;">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Behavior Incidents</h5>
+                </div>
+                <div class="card-body" style="position: relative;">
+                    <canvas id="behaviorIncidentsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            <h5>Recent Driver Behavior Records</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped" id="behaviorTable">
+                    <thead>
+                        <tr>
+                            <th>Vehicle</th>
+                            <th>Time</th>
+                            <th>Speed</th>
+                            <th>Harsh Braking</th>
+                            <th>Rapid Acceleration</th>
+                            <th>Idle Time (min)</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="behaviorTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='driver_behavior.js') }}"></script>
+{% endblock %}

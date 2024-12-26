@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+
+{% block title %}Route Optimization{% endblock %}
+
+{% block head %}
+<style>
+    .container-fluid {
+        padding: 0;
+        height: 100vh;
+        max-width: 100%;
+        margin: 0;
+    }
+    .content-row {
+        height: calc(100vh - 56px);
+        margin: 0;
+    }
+    .left-panel {
+        height: 100%;
+        overflow-y: auto;
+        padding: 15px;
+        width: 25%;
+        max-width: 350px;
+    }
+    .right-panel {
+        height: 100%;
+        width: 75%;
+        min-width: calc(100% - 350px);
+        padding: 0;
+        display: flex;
+    }
+    #map-container {
+        flex: 1;
+        position: relative;
+        height: calc(100vh - 56px);
+        overflow: hidden;
+        background: #f8f9fa;
+        display: flex;
+        flex-direction: column;
+        margin: 0;
+        border: none;
+    }
+    #route-map {
+        flex: 1;
+        width: 100%;
+        height: 100%;
+        border: none;
+        margin: 0;
+        padding: 0;
+    }
+    .card {
+        margin-bottom: 15px;
+        border-radius: 8px;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .card-body {
+        padding: 15px;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    .form-control {
+        height: 38px;
+    }
+    .btn-primary {
+        height: 38px;
+    }
+    #loading {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(255, 255, 255, 0.9);
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+        z-index: 1000;
+        display: none;
+    }
+    .route-details {
+        padding: 15px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-top: 15px;
+    }
+    .detail-item {
+        margin-bottom: 10px;
+    }
+    #stationsList {
+        margin-top: 10px;
+    }
+    .station-item {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row content-row">
+        <div class="col-md-3 left-panel">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title mb-4">Route Optimization</h4>
+                    <form id="routeForm">
+                        <div class="form-group">
+                            <label for="source" class="form-label">Start Location</label>
+                            <input type="text" class="form-control" id="source" name="source" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="destination" class="form-label">Destination</label>
+                            <input type="text" class="form-control" id="destination" name="destination" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="battery_percentage" class="form-label">Current Battery Percentage</label>
+                            <input type="number" class="form-control" id="battery_percentage" name="battery_percentage" 
+                                   min="1" max="100" value="100" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Optimize Route</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="route-details" id="routeDetails" style="display: none;">
+                <h3>Route Details</h3>
+                <div class="detail-item">
+                    <strong>From:</strong> <span id="sourceAddress"></span>
+                </div>
+                <div class="detail-item">
+                    <strong>To:</strong> <span id="destAddress"></span>
+                </div>
+                <div class="detail-item">
+                    <strong>Total Distance:</strong> <span id="totalDistance"></span> km
+                </div>
+                <div class="detail-item">
+                    <strong>Estimated Duration:</strong> <span id="estimatedDuration"></span> hours
+                </div>
+                <div class="detail-item">
+                    <strong>Route Status:</strong> <span id="routeStatus"></span>
+                </div>
+                
+                <div id="chargingStations">
+                    <h4>Available Charging Stations</h4>
+                    <div id="stationsList"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-9 right-panel">
+            <div id="map-container">
+                <div id="loading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3 mb-0">Optimizing route...</p>
+                </div>
+                <iframe id="route-map" frameborder="0" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('routeForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const source = document.getElementById('source').value;
+        const destination = document.getElementById('destination').value;
+        const batteryPercentage = document.getElementById('battery_percentage').value;
+
+        // Show loading indicator
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('route-map').style.display = 'none';
+        document.getElementById('routeDetails').style.display = 'none';
+
+        try {
+            const response = await fetch('/optimize_route', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    source: source,
+                    destination: destination,
+                    battery_percentage: batteryPercentage
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+
+            if (data.error) {
+                alert('Error: ' + data.error);
+                return;
+            }
+
+            // Update route details
+            document.getElementById('sourceAddress').textContent = data.source_address;
+            document.getElementById('destAddress').textContent = data.dest_address;
+            document.getElementById('totalDistance').textContent = data.distance.toFixed(2);
+            document.getElementById('estimatedDuration').textContent = data.duration.toFixed(2);
+            document.getElementById('routeStatus').textContent = data.message;
+
+            // Update charging stations list
+            const stationsList = document.getElementById('stationsList');
+            stationsList.innerHTML = '';
+            data.charging_stations.forEach(station => {
+                const stationDiv = document.createElement('div');
+                stationDiv.className = 'station-item';
+                stationDiv.innerHTML = `
+                    <strong>${station.name}</strong><br>
+                    Charging Speed: ${station.charging_speed} kW<br>
+                    Available Ports: ${station.available_ports}
+                `;
+                stationsList.appendChild(stationDiv);
+            });
+
+            // Display route map
+            const routeMap = document.getElementById('route-map');
+            routeMap.src = data.route;
+            routeMap.style.display = 'block';
+            document.getElementById('routeDetails').style.display = 'block';
+
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error optimizing route: ' + error.message);
+        } finally {
+            document.getElementById('loading').style.display = 'none';
+        }
+    });
+
+    function resizeMap() {
+        const mapContainer = document.getElementById('map-container');
+        const map = document.getElementById('route-map');
+
+        // Set a larger width - using 85% of window width
+        const desiredWidth = Math.min(window.innerWidth * 0.85, mapContainer.offsetWidth);
+        // Set a larger height - using 70vh (70% of viewport height)
+        const desiredHeight = Math.max(window.innerHeight * 0.7, 600); // Minimum height of 600px
+
+        // Apply the dimensions
+        map.style.width = desiredWidth + 'px';
+        map.style.height = desiredHeight + 'px';
+    }
+
+    // Attach the resize handler
+    window.addEventListener('resize', resizeMap);
+
+    // Trigger resize on load to ensure proper dimensions
+    window.addEventListener('load', resizeMap);
+</script>
+{% endblock %}

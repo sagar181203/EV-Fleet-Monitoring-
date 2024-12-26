@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Energy Used</h5>
+                    <h2 class="card-text" id="totalEnergy">0 kWh</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Cost</h5>
+                    <h2 class="card-text" id="totalCost">₹0</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Distance</h5>
+                    <h2 class="card-text" id="totalDistance">0 km</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Avg. Efficiency</h5>
+                    <h2 class="card-text" id="avgEfficiency">0 kWh/km</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="vehicleSelect">Vehicle</label>
+                        <select class="form-control" id="vehicleSelect">
+                            <option value="">All Vehicles</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="startDate">Start Date</label>
+                        <input type="date" class="form-control" id="startDate">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="endDate">End Date</label>
+                        <input type="date" class="form-control" id="endDate">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary mt-4" onclick="updateData()">Apply</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Energy Consumption Over Time</h5>
+                    <canvas id="energyChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Cost Analysis</h5>
+                    <canvas id="costChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vehicle-wise Summary Table -->
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Vehicle-wise Summary</h5>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Vehicle</th>
+                            <th>Total Energy (kWh)</th>
+                            <th>Total Cost (₹)</th>
+                            <th>Total Distance (km)</th>
+                            <th>Avg. Efficiency (kWh/km)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="summaryTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let energyChart, costChart;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize charts
+    const energyCtx = document.getElementById('energyChart').getContext('2d');
+    energyChart = new Chart(energyCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Energy Used (kWh)',
+                data: [],
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }]
+        }
+    });
+
+    const costCtx = document.getElementById('costChart').getContext('2d');
+    costChart = new Chart(costCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Cost (₹)',
+                data: [],
+                borderColor: 'rgb(255, 99, 132)',
+                tension: 0.1
+            }]
+        }
+    });
+
+    // Load vehicles
+    fetch('/api/vehicles')
+        .then(response => response.json())
+        .then(vehicles => {
+            const vehicleSelect = document.getElementById('vehicleSelect');
+            vehicles.forEach(vehicle => {
+                const option = document.createElement('option');
+                option.value = vehicle.id;
+                option.textContent = `${vehicle.vehicle_name} (${vehicle.vehicle_number})`;
+                vehicleSelect.appendChild(option);
+            });
+        });
+
+    // Set default dates
+    const today = new Date();
+    const thirtyDaysAgo = new Date(today);
+    thirtyDaysAgo.setDate(today.getDate() - 30);
+    
+    document.getElementById('startDate').value = thirtyDaysAgo.toISOString().split('T')[0];
+    document.getElementById('endDate').value = today.toISOString().split('T')[0];
+
+    // Load initial data
+    updateData();
+});
+
+function updateData() {
+    const vehicleId = document.getElementById('vehicleSelect').value;
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+
+    // Update summary data
+    fetch(`/api/consumption/summary?start_date=${startDate}&end_date=${endDate}`)
+        .then(response => response.json())
+        .then(data => {
+            updateSummaryCards(data);
+            updateSummaryTable(data);
+        });
+
+    // Update vehicle-specific data if selected
+    if (vehicleId) {
+        fetch(`/api/consumption/vehicle/${vehicleId}?start_date=${startDate}&end_date=${endDate}`)
+            .then(response => response.json())
+            .then(data => {
+                updateCharts(data);
+            });
+    }
+}
+
+function updateSummaryCards(data) {
+    let totalEnergy = 0, totalCost = 0, totalDistance = 0, totalEfficiency = 0;
+    let vehicleCount = data.length;
+
+    data.forEach(metric => {
+        totalEnergy += metric.total_energy;
+        totalCost += metric.total_cost;
+        totalDistance += metric.total_distance;
+        totalEfficiency += metric.avg_efficiency;
+    });
+
+    document.getElementById('totalEnergy').textContent = `${totalEnergy.toFixed(2)} kWh`;
+    document.getElementById('totalCost').textContent = `₹${totalCost.toFixed(2)}`;
+    document.getElementById('totalDistance').textContent = `${totalDistance.toFixed(2)} km`;
+    document.getElementById('avgEfficiency').textContent = 
+        `${(vehicleCount > 0 ? totalEfficiency / vehicleCount : 0).toFixed(2)} kWh/km`;
+}
+
+function updateSummaryTable(data) {
+    const tbody = document.getElementById('summaryTableBody');
+    tbody.innerHTML = '';
+
+    data.forEach(metric => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${metric.vehicle_name} (${metric.vehicle_number})</td>
+            <td>${metric.total_energy.toFixed(2)}</td>
+            <td>₹${metric.total_cost.toFixed(2)}</td>
+            <td>${metric.total_distance.toFixed(2)}</td>
+            <td>${metric.avg_efficiency.toFixed(2)}</td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function updateCharts(data) {
+    // Sort data by timestamp
+    data.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+    const labels = data.map(d => new Date(d.timestamp).toLocaleDateString());
+    const energyData = data.map(d => d.energy_used);
+    const costData = data.map(d => d.cost);
+
+    energyChart.data.labels = labels;
+    energyChart.data.datasets[0].data = energyData;
+    energyChart.update();
+
+    costChart.data.labels = labels;
+    costChart.data.datasets[0].data = costData;
+    costChart.update();
+}
+</script>
+{% endblock %}

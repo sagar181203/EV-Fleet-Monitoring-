@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Overview Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">🚗</div>
+            <div class="stat-content">
+                <h3>{{ total_vehicles|default(0) }}</h3>
+                <p>Total Vehicles</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⚡</div>
+            <div class="stat-content">
+                <h3>{{ avg_battery|default(0) }}%</h3>
+                <p>Average Battery Level</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🔋</div>
+            <div class="stat-content">
+                <h3>{{ charging_vehicles|default(0) }}</h3>
+                <p>Vehicles Charging</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🛣️</div>
+            <div class="stat-content">
+                <h3>{{ active_vehicles|default(0) }}</h3>
+                <p>Vehicles Active</p>
+            </div>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="error-message">
+        {{ error }}
+    </div>
+    {% else %}
+    <!-- Real-time Vehicle Status -->
+    <div class="dashboard-grid">
+        <div class="dashboard-card vehicle-status">
+            <h2>Vehicle Status Overview</h2>
+            <div class="chart-container">
+                <canvas id="vehicleStatusChart"></canvas>
+            </div>
+        </div>
+
+        <div class="dashboard-card battery-distribution">
+            <h2>Battery Level Distribution</h2>
+            <div class="chart-container">
+                <canvas id="batteryDistChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Recent Vehicle Activity -->
+        <div class="dashboard-card recent-activity">
+            <h2>Recent Activity</h2>
+            <div class="activity-list">
+                {% for activity in recent_activities|default([]) %}
+                <div class="activity-item">
+                    <div class="activity-icon">{{ activity.icon }}</div>
+                    <div class="activity-details">
+                        <h4>{{ activity.vehicle_name }}</h4>
+                        <p>{{ activity.status }}</p>
+                        <small>{{ activity.timestamp }}</small>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center text-muted">
+                    No recent activities
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Vehicle List -->
+        <div class="dashboard-card vehicle-list">
+            <h2>Vehicle Fleet</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Vehicle</th>
+                            <th>Battery</th>
+                            <th>Status</th>
+                            <th>Location</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for vehicle in vehicles|default([]) %}
+                        <tr>
+                            <td>{{ vehicle.vehicle_name }}</td>
+                            <td>
+                                <div class="battery-indicator">
+                                    <div class="battery-level" style="width: {{ vehicle.battery_status }}%"></div>
+                                    <span>{{ vehicle.battery_status }}%</span>
+                                </div>
+                            </td>
+                            <td><span class="status-badge {{ vehicle.status_class }}">{{ vehicle.status }}</span></td>
+                            <td>{{ vehicle.location }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Dashboard Scripts -->
+{% if not error %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Vehicle Status Chart
+    const statusCtx = document.getElementById('vehicleStatusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ status_labels|default([])|tojson }},
+            datasets: [{
+                data: {{ status_data|default([])|tojson }},
+                backgroundColor: ['#4CAF50', '#FFC107', '#F44336', '#2196F3'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right'
+                }
+            }
+        }
+    });
+
+    // Battery Distribution Chart
+    const batteryCtx = document.getElementById('batteryDistChart').getContext('2d');
+    new Chart(batteryCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ battery_labels|default([])|tojson }},
+            datasets: [{
+                label: 'Number of Vehicles',
+                data: {{ battery_data|default([])|tojson }},
+                backgroundColor: '#2196F3',
+                borderRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endif %}
+{% endblock %}

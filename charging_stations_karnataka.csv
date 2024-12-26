@@ -1,0 +1,21 @@
+Station ID,Station Name,City,Latitude,Longitude,Charging Speed (kW),Available Ports,Status
+CS001,Bengaluru Central Station,Bengaluru,12.9716,77.5946,50,4,Active
+CS002,Mysuru Road Hub,Mysuru,12.3052,76.6553,45,3,Active
+CS003,Mangalore Port Station,Mangalore,12.8698,74.8431,40,2,Active
+CS004,Hubli Express Charge,Hubli,15.3647,75.1240,50,4,Active
+CS005,Belgaum Quick Charge,Belgaum,15.8497,74.4977,35,2,Active
+CS006,Shimoga Green Station,Shimoga,13.9299,75.5681,30,2,Active
+CS007,Electronic City Hub,Bengaluru,12.8399,77.6770,50,6,Active
+CS008,Whitefield Power Hub,Bengaluru,12.9698,77.7500,45,4,Active
+CS009,Indiranagar Station,Bengaluru,12.9784,77.6408,40,3,Active
+CS010,Koramangala Quick Charge,Bengaluru,12.9352,77.6245,50,5,Active
+CS011,Tumkur Highway Station,Tumkur,13.3379,77.1173,35,2,Active
+CS012,Hassan Central,Hassan,13.0012,76.1026,30,2,Active
+CS013,Manipal University Hub,Manipal,13.3529,74.7859,40,3,Active
+CS014,Udupi Coast Station,Udupi,13.3409,74.7421,35,2,Active
+CS015,Dharwad Express Charge,Dharwad,15.4589,75.0078,40,3,Active
+CS016,Ballari Power Hub,Ballari,15.1394,76.9214,35,2,Active
+CS017,Raichur Solar Station,Raichur,16.2120,77.3439,30,2,Active
+CS018,Kalaburagi Central,Kalaburagi,17.3297,76.8343,35,2,Active
+CS019,Bidar Express Hub,Bidar,17.9104,77.5199,30,2,Active
+CS020,Madikeri Hill Station,Madikeri,12.4244,75.7382,30,2,Active

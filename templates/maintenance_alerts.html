@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+.table td {
+    color: #000 !important;
+}
+.card-body {
+    height: 250px; /* Adjusted height for better fit */
+}
+.chart-container {
+    float: left;
+    width: 48%;
+}
+</style>
+<div class="container mt-4">
+    <h2>Maintenance Alerts</h2>
+    <div class="row mb-4">
+        <div class="chart-container">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Alert Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="alertDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="chart-container">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Priority Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="priorityDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            <h5>Active Maintenance Alerts</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped" id="alertsTable">
+                    <thead>
+                        <tr>
+                            <th>Vehicle</th>
+                            <th>Alert Type</th>
+                            <th>Description</th>
+                            <th>Time</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="alertsTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='maintenance_alerts.js') }}"></script>
+{% endblock %}

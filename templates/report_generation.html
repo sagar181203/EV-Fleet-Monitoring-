@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h2>Generate Report</h2>
+        </div>
+        <div class="card-body">
+            <form id="reportForm">
+                <div class="form-group mb-3">
+                    <label for="reportType">Report Type</label>
+                    <select class="form-control" id="reportType" required>
+                        <option value="">Select Report Type</option>
+                        <option value="battery_health">Battery Health Report</option>
+                        <option value="driver_behavior">Driver Behavior Report</option>
+                        <option value="maintenance">Maintenance Report</option>
+                        <option value="consumption">Consumption Report</option>
+                    </select>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label>Select Vehicles</label>
+                    <div id="vehicleCheckboxes" class="border p-3 rounded">
+                        <!-- Vehicle checkboxes will be added here dynamically -->
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="startDate">Start Date</label>
+                            <input type="date" class="form-control" id="startDate" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="endDate">End Date</label>
+                            <input type="date" class="form-control" id="endDate" required>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Generate Report</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header">
+            <h2>Generated Reports</h2>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Report Type</th>
+                            <th>Generated At</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportsList">
+                        <!-- Reports will be added here dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast for notifications -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="reportToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto">Notification</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body"></div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Load vehicles for checkboxes
+    fetch('/api/vehicles')
+        .then(response => response.json())
+        .then(vehicles => {
+            const vehicleCheckboxes = document.getElementById('vehicleCheckboxes');
+            vehicles.forEach(vehicle => {
+                const div = document.createElement('div');
+                div.className = 'form-check';
+                div.innerHTML = `
+                    <input class="form-check-input" type="checkbox" value="${vehicle.id}" id="vehicle${vehicle.id}">
+                    <label class="form-check-label" for="vehicle${vehicle.id}">
+                        ${vehicle.vehicle_name} (${vehicle.vehicle_number})
+                    </label>
+                `;
+                vehicleCheckboxes.appendChild(div);
+            });
+        });
+
+    // Load existing reports
+    loadReports();
+
+    // Handle form submission
+    document.getElementById('reportForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Get selected vehicles
+        const selectedVehicles = Array.from(document.querySelectorAll('#vehicleCheckboxes input:checked'))
+            .map(checkbox => parseInt(checkbox.value));
+
+        if (selectedVehicles.length === 0) {
+            showToast('Please select at least one vehicle', 'error');
+            return;
+        }
+
+        const reportData = {
+            report_type: document.getElementById('reportType').value,
+            start_date: document.getElementById('startDate').value,
+            end_date: document.getElementById('endDate').value,
+            vehicles: selectedVehicles
+        };
+
+        fetch('/api/generate_report', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(reportData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showToast('Report generated successfully!', 'success');
+                loadReports(); // Reload reports list
+            } else {
+                showToast(data.message || 'Error generating report', 'error');
+            }
+        })
+        .catch(error => {
+            showToast('Error generating report: ' + error, 'error');
+        });
+    });
+});
+
+function loadReports() {
+    fetch('/api/reports')
+        .then(response => response.json())
+        .then(reports => {
+            const reportsList = document.getElementById('reportsList');
+            reportsList.innerHTML = '';
+            reports.forEach(report => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${report.report_type.replace('_', ' ').toUpperCase()}</td>
+                    <td>${new Date(report.generated_at).toLocaleString()}</td>
+                    <td>
+                        <a href="/api/reports/${report.id}/download" class="btn btn-sm btn-primary me-1">
+                            Download
+                        </a>
+                        <button onclick="deleteReport(${report.id})" class="btn btn-sm btn-danger">
+                            Delete
+                        </button>
+                    </td>
+                `;
+                reportsList.appendChild(row);
+            });
+        });
+}
+
+function deleteReport(reportId) {
+    fetch(`/api/reports/${reportId}`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            showToast('Report deleted successfully!', 'success');
+            loadReports(); // Reload reports list
+        } else {
+            showToast(data.message || 'Error deleting report', 'error');
+        }
+    })
+    .catch(error => {
+        showToast('Error deleting report: ' + error, 'error');
+    });
+}
+
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('reportToast');
+    const toastBody = toast.querySelector('.toast-body');
+    toastBody.textContent = message;
+    toastBody.className = 'toast-body ' + (type === 'error' ? 'bg-danger text-white' : 'bg-success text-white');
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+}
+</script>
+{% endblock %}

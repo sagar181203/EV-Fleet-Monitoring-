@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid dashboard-container">
+    <!-- Summary Cards Row -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card summary-card">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-container me-3">
+                        <img src="{{ url_for('static', filename='images/car.svg') }}" alt="Vehicle Icon" class="summary-icon">
+                    </div>
+                    <div>
+                        <h3 class="card-title mb-0">{{ total_vehicles }}</h3>
+                        <p class="card-text text-muted">Total Vehicles</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card summary-card">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-container me-3">
+                        <img src="{{ url_for('static', filename='images/battery.svg') }}" alt="Battery Icon" class="summary-icon">
+                    </div>
+                    <div>
+                        <h3 class="card-title mb-0">{{ avg_battery_level }}%</h3>
+                        <p class="card-text text-muted">Average Battery Level</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card summary-card">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-container me-3">
+                        <img src="{{ url_for('static', filename='images/charging.svg') }}" alt="Charging Icon" class="summary-icon">
+                    </div>
+                    <div>
+                        <h3 class="card-title mb-0">{{ vehicles_charging }}</h3>
+                        <p class="card-text text-muted">Vehicles Charging</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card summary-card">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-container me-3">
+                        <img src="{{ url_for('static', filename='images/active.svg') }}" alt="Active Icon" class="summary-icon">
+                    </div>
+                    <div>
+                        <h3 class="card-title mb-0">{{ vehicles_active }}</h3>
+                        <p class="card-text text-muted">Vehicles Active</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Vehicle Status Overview</h5>
+                    <div class="chart-container">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Battery Level Distribution</h5>
+                    <div class="chart-container">
+                        <canvas id="batteryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity and Fleet Row -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Recent Activity</h5>
+                    <div class="activity-list">
+                        {% for activity in recent_activities %}
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <img src="{{ url_for('static', filename='images/car-small.svg') }}" alt="Vehicle Icon">
+                            </div>
+                            <div class="activity-content">
+                                <h6>Vehicle {{ activity.vehicle_id }}</h6>
+                                <p>{{ activity.message }}</p>
+                                <small class="text-muted">{{ activity.time_ago }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Vehicle Fleet</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Vehicle</th>
+                                    <th>Battery</th>
+                                    <th>Status</th>
+                                    <th>Location</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for vehicle in vehicles %}
+                                <tr>
+                                    <td>{{ vehicle.vehicle_name }}</td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 style="width: {{ vehicle.battery_status }}%"
+                                                 aria-valuenow="{{ vehicle.battery_status }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">{{ vehicle.battery_status }}%</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if vehicle.status == 'Active' else 'warning' }}">
+                                            {{ vehicle.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ vehicle.location }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.dashboard-container {
+    padding: 20px;
+}
+.summary-card {
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.icon-container {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background-color: rgba(74, 144, 226, 0.1);
+}
+.summary-icon {
+    width: 24px;
+    height: 24px;
+}
+.activity-icon img {
+    width: 20px;
+    height: 20px;
+}
+.chart-container {
+    height: 300px;
+    position: relative;
+}
+.activity-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+.activity-item {
+    display: flex;
+    align-items: start;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+.activity-icon {
+    margin-right: 15px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background-color: rgba(74, 144, 226, 0.1);
+}
+.activity-content {
+    flex: 1;
+}
+.activity-content h6 {
+    margin: 0;
+    color: #333;
+}
+.activity-content p {
+    margin: 5px 0;
+    color: #666;
+}
+.progress {
+    height: 20px;
+}
+.table-responsive {
+    max-height: 300px;
+    overflow-y: auto;
+}
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Status Overview Chart
+const statusCtx = document.getElementById('statusChart').getContext('2d');
+new Chart(statusCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Active', 'Charging', 'Inactive', 'Maintenance'],
+        datasets: [{
+            data: {{ status_data|tojson }},
+            backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#17a2b8'],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'right'
+            }
+        }
+    }
+});
+
+// Battery Distribution Chart
+const batteryCtx = document.getElementById('batteryChart').getContext('2d');
+new Chart(batteryCtx, {
+    type: 'bar',
+    data: {
+        labels: ['0-20%', '21-40%', '41-60%', '61-80%', '81-100%'],
+        datasets: [{
+            label: 'Number of Vehicles',
+            data: {{ battery_distribution|tojson }},
+            backgroundColor: '#007bff',
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

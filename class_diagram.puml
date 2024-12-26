@@ -1,0 +1,81 @@
+@startuml EV Fleet Monitoring System
+
+skinparam class {
+    BackgroundColor White
+    ArrowColor Black
+    BorderColor Black
+}
+
+class User {
+    +id: Integer
+    +username: String
+    +email: String
+    +password: String
+    +city: String
+}
+
+class Vehicle {
+    +id: Integer
+    +vehicle_name: String
+    +vehicle_number: String
+    +owner_name: String
+    +battery_status: Integer
+    +location: String
+    +speed: Float
+    +consumption_metrics: List<ConsumptionMetric>
+}
+
+class DriverBehavior {
+    +id: Integer
+    +vehicle_id: Integer
+    +timestamp: DateTime
+    +speed: Float
+    +harsh_braking: Boolean
+    +rapid_acceleration: Boolean
+    +idle_time: Integer
+    +score: Integer
+}
+
+class MaintenanceAlert {
+    +id: Integer
+    +vehicle_id: Integer
+    +alert_type: String
+    +description: String
+    +timestamp: DateTime
+    +priority: String
+    +status: String
+}
+
+class Report {
+    +id: Integer
+    +report_type: String
+    +filename: String
+    +generated_at: DateTime
+}
+
+class ConsumptionMetric {
+    +id: Integer
+    +vehicle_id: Integer
+    +timestamp: DateTime
+    +energy_used: Float
+    +cost: Float
+    +distance: Float
+    +efficiency: Float
+}
+
+class RouteOptimizer {
+    +mapbox_token: String
+    +charging_stations: List
+    +geocode_location(location: String): Tuple
+    +calculate_distance(coord1: Tuple, coord2: Tuple): Float
+    +optimize_route(start: String, end: String): Dict
+    +generate_route_map(route_data: Dict): String
+}
+
+' Relationships
+Vehicle "1" -- "0..*" DriverBehavior
+Vehicle "1" -- "0..*" MaintenanceAlert
+Vehicle "1" -- "0..*" ConsumptionMetric
+Vehicle "1" -- "0..*" Report
+
+@enduml
