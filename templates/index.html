@@ -223,14 +223,14 @@
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// Status Overview Chart
+// Status Chart
 const statusCtx = document.getElementById('statusChart').getContext('2d');
 new Chart(statusCtx, {
     type: 'doughnut',
     data: {
         labels: ['Active', 'Charging', 'Inactive', 'Maintenance'],
         datasets: [{
-            data: {{ status_data|tojson }},
+            data: {{ status_data|tojson|safe }},
             backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#17a2b8'],
             borderWidth: 0
         }]
@@ -254,7 +254,7 @@ new Chart(batteryCtx, {
         labels: ['0-20%', '21-40%', '41-60%', '61-80%', '81-100%'],
         datasets: [{
             label: 'Number of Vehicles',
-            data: {{ battery_distribution|tojson }},
+            data: {{ battery_distribution|tojson|safe }},
             backgroundColor: '#007bff',
             borderWidth: 0
         }]

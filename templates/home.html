@@ -125,9 +125,9 @@ document.addEventListener('DOMContentLoaded', function() {
     new Chart(statusCtx, {
         type: 'doughnut',
         data: {
-            labels: {{ status_labels|default([])|tojson }},
+            labels: {{ status_labels|default([])|tojson|safe }},
             datasets: [{
-                data: {{ status_data|default([])|tojson }},
+                data: {{ status_data|default([])|tojson|safe }},
                 backgroundColor: ['#4CAF50', '#FFC107', '#F44336', '#2196F3'],
                 borderWidth: 0
             }]
