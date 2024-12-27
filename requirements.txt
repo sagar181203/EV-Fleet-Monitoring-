@@ -16,3 +16,12 @@ itsdangerous==2.1.2
 gunicorn==21.2.0
 matplotlib==3.8.2
 polyline==2.0.2
+reportlab==4.2.5
+
+
+
+
+
+
+
+
