@@ -1,0 +1,38 @@
+# Normalize line endings
+* text=auto
+
+# Python files
+*.py text
+*.ipynb text
+
+# Shell scripts
+*.sh text eol=lf
+
+# CSV files (data files)
+*.csv text
+
+# JavaScript files
+*.js text
+
+# YAML files
+*.yaml text
+*.yml text
+
+# Markdown files
+*.md text
+
+# License file
+LICENSE text
+
+# UML diagrams
+*.puml text
+
+# Binary files (models, pkl files)
+*.pkl binary
+
+# Ignore runtime files for export
+runtime export-ignore
+
+# Exclude cache and logs from exports
+__pycache__/* export-ignore
+*.log export-ignore
