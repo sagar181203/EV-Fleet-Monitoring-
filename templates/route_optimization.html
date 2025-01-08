@@ -109,11 +109,11 @@
                     <form id="routeForm">
                         <div class="form-group">
                             <label for="source" class="form-label">Start Location</label>
-                            <input type="text" class="form-control" id="source" name="source" required>
+                            <input type="text" class="form-control" id="source" name="source" >
                         </div>
                         <div class="form-group">
                             <label for="destination" class="form-label">Destination</label>
-                            <input type="text" class="form-control" id="destination" name="destination" required>
+                            <input type="text" class="form-control" id="destination" name="destination" >
                         </div>
                         <div class="form-group">
                             <label for="battery_percentage" class="form-label">Current Battery Percentage</label>
@@ -167,10 +167,11 @@
     document.getElementById('routeForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        const source = document.getElementById('source').value;
-        const destination = document.getElementById('destination').value;
-        const batteryPercentage = document.getElementById('battery_percentage').value;
+        const source = document.getElementById('source').value.trim();
+        const destination = document.getElementById('destination').value.trim();
+        const batteryPercentage = parseInt(document.getElementById('battery_percentage').value, 10);
 
+            // Validate inputs
     if (!source || !destination) {
         alert('Both Start Location and Destination are required.');
         return;

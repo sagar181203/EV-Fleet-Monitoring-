@@ -7,7 +7,7 @@
             <h2>Generate Report</h2>
         </div>
         <div class="card-body">
-            <form id="reportForm">
+            <form id="reportForm" novalidate>
                 <div class="form-group mb-3">
                     <label for="reportType">Report Type</label>
                     <select class="form-control" id="reportType" required>
@@ -17,6 +17,7 @@
                         <option value="maintenance">Maintenance Report</option>
                         <option value="consumption">Consumption Report</option>
                     </select>
+                    <div class="invalid-feedback">Please select a report type.</div>
                 </div>
 
                 <div class="form-group mb-3">
@@ -24,6 +25,7 @@
                     <div id="vehicleCheckboxes" class="border p-3 rounded">
                         <!-- Vehicle checkboxes will be added here dynamically -->
                     </div>
+                    <div class="invalid-feedback">Please select at least one vehicle.</div>
                 </div>
 
                 <div class="row">
@@ -31,12 +33,14 @@
                         <div class="form-group mb-3">
                             <label for="startDate">Start Date</label>
                             <input type="date" class="form-control" id="startDate" required>
+                            <div class="invalid-feedback">Please select a start date.</div>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group mb-3">
                             <label for="endDate">End Date</label>
                             <input type="date" class="form-control" id="endDate" required>
+                            <div class="invalid-feedback">Please select an end date.</div>
                         </div>
                     </div>
                 </div>
@@ -125,6 +129,32 @@ document.addEventListener('DOMContentLoaded', function() {
             end_date: document.getElementById('endDate').value,
             vehicles: selectedVehicles
         };
+
+                // Form validation
+        const reportType = document.getElementById('reportType');
+        const startDate = document.getElementById('startDate');
+        const endDate = document.getElementById('endDate');
+        
+        if (!reportType.value) {
+            reportType.classList.add('is-invalid');
+            return;
+        } else {
+            reportType.classList.remove('is-invalid');
+        }
+
+        if (!startDate.value) {
+            startDate.classList.add('is-invalid');
+            return;
+        } else {
+            startDate.classList.remove('is-invalid');
+        }
+
+        if (!endDate.value) {
+            endDate.classList.add('is-invalid');
+            return;
+        } else {
+            endDate.classList.remove('is-invalid');
+        }
 
         fetch('/api/generate_report', {
             method: 'POST',
