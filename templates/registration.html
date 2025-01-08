@@ -5,29 +5,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - EV Fleet Monitoring</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .error {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        button {
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body class="auth-page">
     <div class="auth-container">
         <h1>Register</h1>
-        <form method="POST">
+        <form method="POST" onsubmit="return validateForm()">
             <div class="form-group">
                 <label for="uname">Username</label>
-                <input type="text" name="uname" id="uname" required>
+                <input type="text" name="uname" id="uname">
+                <small class="error-message" id="uname-error"></small>
             </div>
             
             <div class="form-group">
                 <label for="email">Email</label>
-                <input type="email" name="email" id="email" required>
+                <input type="email" name="email" id="email">
+                <small class="error-message" id="email-error"></small>
             </div>
             
             <div class="form-group">
                 <label for="passw">Password</label>
-                <input type="password" name="passw" id="passw" required>
+                <input type="password" name="passw" id="passw">
+                <small class="error-message" id="passw-error"></small>
+            </div>
+
+
+            <div class="form-group">
+                <label for="confirm-passw">Confirm Password</label>
+                <input type="password" name="confirm-passw" id="confirm-passw">
+                <small class="error-message" id="confirm-passw-error"></small>
             </div>
             
             <div class="form-group">
                 <label for="city">City</label>
                 <input type="text" name="city" id="city">
+                <small class="error-message" id="city-error"></small>
             </div>
             
             {% if error %}
@@ -39,5 +71,61 @@
             <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
         </form>
     </div>
+    <script>
+        function validateForm() {
+            let isValid = true;
+
+            // Clear previous error messages
+            document.querySelectorAll('.error-message').forEach(msg => msg.textContent = '');
+
+            // Validate username
+            const uname = document.getElementById('uname').value.trim();
+            if (!uname) {
+                document.getElementById('uname-error').textContent = "Username is required.";
+                isValid = false;
+            } else if (uname.length < 3 || uname.length > 15) {
+                document.getElementById('uname-error').textContent = "Username must be between 3 and 15 characters.";
+                isValid = false;
+            }
+
+            // Validate email
+            const email = document.getElementById('email').value.trim();
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!email) {
+                document.getElementById('email-error').textContent = "Email is required.";
+                isValid = false;
+            } else if (!emailPattern.test(email)) {
+                document.getElementById('email-error').textContent = "Enter a valid email address.";
+                isValid = false;
+            }
+
+            // Validate password
+            const passw = document.getElementById('passw').value;
+            if (!passw) {
+                document.getElementById('passw-error').textContent = "Password is required.";
+                isValid = false;
+            } else if (passw.length < 6) {
+                document.getElementById('passw-error').textContent = "Password must be at least 6 characters.";
+                isValid = false;
+            }
+
+            // Validate confirm password
+            const confirmPassw = document.getElementById('confirm-passw').value;
+            if (confirmPassw !== passw) {
+                document.getElementById('confirm-passw-error').textContent = "Passwords do not match.";
+                isValid = false;
+            }
+
+            // Validate city
+            const city = document.getElementById('city').value.trim();
+            const cityPattern = /^[A-Za-z\s]+$/;
+            if (city && !cityPattern.test(city)) {
+                document.getElementById('city-error').textContent = "City must contain only letters.";
+                isValid = false;
+            }
+
+            return isValid;
+        }
+    </script>
 </body>
 </html>

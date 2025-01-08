@@ -15,11 +15,13 @@
                         </div>
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" value="{{ current_user.email }}">
+                            <input type="email" class="form-control" id="email" name="email" value="{{ current_user.email }}" readonly pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" required>
+                            <div class="invalid-feedback">Please enter a valid email address.</div>
                         </div>
                         <div class="mb-3">
                             <label for="city" class="form-label">City</label>
-                            <input type="text" class="form-control" id="city" name="city" value="{{ current_user.city }}">
+                            <input type="text" class="form-control" id="city" name="city" value="{{ current_user.city }}" minlength="2" maxlength="50" required>
+                            <div class="invalid-feedback">City cannot be empty.</div>
                         </div>
                         <button type="submit" class="btn btn-primary">Save Changes</button>
                     </form>
@@ -31,18 +33,21 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Change Password</h5>
-                    <form id="passwordForm">
+                    <form id="passwordForm" novalidate>
                         <div class="mb-3">
                             <label for="currentPassword" class="form-label">Current Password</label>
-                            <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+                            <input type="password" class="form-control" id="currentPassword" name="currentPassword" required >
+                            <div class="invalid-feedback">Current password is required.</div>
                         </div>
                         <div class="mb-3">
                             <label for="newPassword" class="form-label">New Password</label>
-                            <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+                            <input type="password" class="form-control" id="newPassword" name="newPassword" required >
+                            <div class="invalid-feedback">New password must be at least 6 characters long.</div>
                         </div>
                         <div class="mb-3">
                             <label for="confirmPassword" class="form-label">Confirm New Password</label>
-                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" >
+                            <div class="invalid-feedback">Passwords must match.</div>
                         </div>
                         <button type="submit" class="btn btn-primary">Change Password</button>
                     </form>
@@ -53,63 +58,80 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Handle user settings form submission
-    document.getElementById('userSettingsForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        
-        fetch('/api/update_settings', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(Object.fromEntries(formData))
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Settings updated successfully!');
-            } else {
-                alert('Error updating settings: ' + data.error);
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle user settings form submission
+        const userSettingsForm = document.getElementById('userSettingsForm');
+        const passwordForm = document.getElementById('passwordForm');
+    
+        userSettingsForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+    
+            if (!this.checkValidity()) {
+                this.classList.add('was-validated');
+                return;
             }
-        })
-        .catch(error => {
-            alert('Error updating settings: ' + error);
+            
+            const formData = new FormData(this);
+            
+            fetch('/api/update_settings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(Object.fromEntries(formData))
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Settings updated successfully!');
+                } else {
+                    alert('Error updating settings: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('Error updating settings: ' + error);
+            });
+        });
+    
+        // Handle password change form submission
+        passwordForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+    
+            // Custom validation: check if new passwords match
+            const formData = new FormData(this);
+            const newPassword = formData.get('newPassword');
+            const confirmPassword = formData.get('confirmPassword');
+            
+            if (newPassword !== confirmPassword) {
+                alert('New passwords do not match!');
+                return;
+            }
+    
+            if (!this.checkValidity()) {
+                this.classList.add('was-validated');
+                return;
+            }
+    
+            fetch('/api/change_password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(Object.fromEntries(formData))
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Password changed successfully!');
+                    this.reset();
+                } else {
+                    alert('Error changing password: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('Error changing password: ' + error);
+            });
         });
     });
-
-    // Handle password change form submission
-    document.getElementById('passwordForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        
-        // Validate passwords match
-        if (formData.get('newPassword') !== formData.get('confirmPassword')) {
-            alert('New passwords do not match!');
-            return;
-        }
-
-        fetch('/api/change_password', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(Object.fromEntries(formData))
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Password changed successfully!');
-                this.reset();
-            } else {
-                alert('Error changing password: ' + data.error);
-            }
-        })
-        .catch(error => {
-            alert('Error changing password: ' + error);
-        });
-    });
-});
-</script>
+    </script>
 {% endblock %}

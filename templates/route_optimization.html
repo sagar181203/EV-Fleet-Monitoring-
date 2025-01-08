@@ -171,6 +171,21 @@
         const destination = document.getElementById('destination').value;
         const batteryPercentage = document.getElementById('battery_percentage').value;
 
+    if (!source || !destination) {
+        alert('Both Start Location and Destination are required.');
+        return;
+    }
+
+    if (source.length < 3 || destination.length < 3) {
+        alert('Location names must be at least 3 characters long.');
+        return;
+    }
+
+    if (isNaN(batteryPercentage) || batteryPercentage < 1 || batteryPercentage > 100) {
+        alert('Battery percentage must be a number between 1 and 100.');
+        return;
+    }
+
         // Show loading indicator
         document.getElementById('loading').style.display = 'block';
         document.getElementById('route-map').style.display = 'none';

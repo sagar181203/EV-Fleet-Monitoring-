@@ -29,7 +29,7 @@
     .form-group {
         margin-bottom: 20px;
         width: 80%;
-        text-align: center;
+        text-align: left;
     }
 
     .form-container label {
@@ -75,6 +75,16 @@
         background: #2980b9;
     }
 
+
+    .error {
+        /* display: none; */
+        color: #e74c3c;
+        font-size: 14px;
+        margin-top: 5px;
+        text-align: left;
+        width: 100%;
+    }
+
     .success-message {
         margin-top: 20px;
         padding: 15px;
@@ -91,7 +101,7 @@
         margin-top: 20px;
         padding: 15px;
         border-radius: 6px;
-        text-align: center;
+        text-align: left;
         font-size: 16px;
         font-weight: 600;
         background-color: #e74c3c;
@@ -99,46 +109,56 @@
         width: 80%;
     }
 
+    .error.active {
+        display: block;
+    }
+
     form {
         width: 100%;
         display: flex;
         flex-direction: column;
-        align-items: center;
+        align-items: left;
     }
 </style>
 
 <div class="content">
     <div class="form-container">
         <h1>Register Vehicle</h1>
-        <form method="POST">
+        <form method="POST" onsubmit="return validateForm()">
             <div class="form-group">
                 <label for="vehicle_name">Vehicle Name:</label>
-                <input type="text" id="vehicle_name" name="vehicle_name" placeholder="Enter vehicle name" required>
+                <input type="text" id="vehicle_name" name="vehicle_name" placeholder="Enter vehicle name">
+                <small class="error" id="vehicle_name_error"></small>
             </div>
 
             <div class="form-group">
                 <label for="vehicle_number">Vehicle Number:</label>
-                <input type="text" id="vehicle_number" name="vehicle_number" placeholder="Enter vehicle number" required>
+                <input type="text" id="vehicle_number" name="vehicle_number" placeholder="Enter vehicle number">
+                <small class="error" id="vehicle_number_error"></small>
             </div>
 
             <div class="form-group">
                 <label for="owner_name">Owner Name:</label>
-                <input type="text" id="owner_name" name="owner_name" placeholder="Enter owner name" required>
+                <input type="text" id="owner_name" name="owner_name" placeholder="Enter owner name">
+                <small class="error" id="owner_name_error"></small>
             </div>
 
             <div class="form-group">
                 <label for="battery_status">Battery Status (%):</label>
-                <input type="number" id="battery_status" name="battery_status" placeholder="Enter battery status" required min="0" max="100">
+                <input type="number" id="battery_status" name="battery_status" placeholder="Enter battery status" min="0" max="100">
+                <small class="error" id="battery_status_error"></small>
             </div>
 
             <div class="form-group">
                 <label for="location">Location:</label>
-                <input type="text" id="location" name="location" placeholder="Enter location" required>
+                <input type="text" id="location" name="location" placeholder="Enter location">
+                <small class="error" id="location_error"></small>
             </div>
 
             <div class="form-group">
                 <label for="speed">Speed (km/h):</label>
-                <input type="number" id="speed" name="speed" placeholder="Enter speed" required min="0">
+                <input type="number" id="speed" name="speed" placeholder="Enter speed" min="0">
+                <small class="error" id="speed_error"></small>
             </div>
 
             <button type="submit">Register Vehicle</button>
@@ -157,4 +177,42 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+    function validateForm() {
+        let isValid = true;
+
+        const showError = (inputId, errorId, condition, errorMessage) => {
+            const errorElement = document.getElementById(errorId);
+            if (condition) {
+                errorElement.textContent = errorMessage;
+                errorElement.classList.add('active');
+                isValid = false;
+            } else {
+                errorElement.textContent = '';
+                errorElement.classList.remove('active');
+            }
+        };
+
+        const vehicleName = document.getElementById('vehicle_name').value.trim();
+        showError('vehicle_name', 'vehicle_name_error', vehicleName.length < 3, 'Vehicle name must be at least 3 characters.');
+
+        const vehicleNumber = document.getElementById('vehicle_number').value.trim();
+        showError('vehicle_number', 'vehicle_number_error', !/^[A-Za-z0-9-]+$/.test(vehicleNumber), 'Invalid vehicle number.');
+
+        const ownerName = document.getElementById('owner_name').value.trim();
+        showError('owner_name', 'owner_name_error', ownerName.length < 3, 'Owner name must be at least 3 characters.');
+
+        const batteryStatus = document.getElementById('battery_status').value;
+        showError('battery_status', 'battery_status_error', batteryStatus < 0 || batteryStatus > 100, 'Battery status must be between 0 and 100.');
+
+        const location = document.getElementById('location').value.trim();
+        showError('location', 'location_error', location.length < 3, 'Location must be at least 3 characters.');
+
+        const speed = document.getElementById('speed').value;
+        showError('speed', 'speed_error', speed < 0, 'Speed must be a positive number.');
+
+        return isValid;
+    }
+</script>
 {% endblock %}

@@ -4,6 +4,13 @@
 
 {% block content %}
 <style>
+        .error-message {
+        color: red;
+        font-size: 14px;
+        margin-top: 5px;
+        text-align: left;
+    }
+    
     .form-container {
         width: 100%;
         max-width: 500px;
@@ -29,7 +36,7 @@
     .form-group {
         margin-bottom: 20px;
         width: 80%;
-        text-align: center;
+        text-align: left;
     }
 
     .form-container label {
@@ -153,20 +160,23 @@
 
 <div class="form-container">
     <h1>Battery Health Status</h1>
-    <form method="POST" action="{{ url_for('battery_health_status') }}">
+    <form method="POST" action="{{ url_for('battery_health_status') }}" onsubmit="return validateForm()">
         <div class="form-group">
             <label for="capacity">Capacity (mAh):</label>
-            <input type="number" id="capacity" name="capacity" placeholder="Enter battery capacity" required step="1" min="0">
+            <input type="number" id="capacity" name="capacity" placeholder="Enter battery capacity" step="1" min="0">
+            <small class="error-message" id="capacity-error"></small>
         </div>
         
         <div class="form-group">
             <label for="voltage">Voltage (V):</label>
-            <input type="number" id="voltage" name="voltage" placeholder="Enter voltage" required step="0.01" min="0">
+            <input type="number" id="voltage" name="voltage" placeholder="Enter voltage" step="0.01" min="0">
+            <small class="error-message" id="voltage-error"></small>
         </div>
         
         <div class="form-group">
             <label for="temperature">Temperature (°C):</label>
-            <input type="number" id="temperature" name="temperature" placeholder="Enter temperature" required step="0.1">
+            <input type="number" id="temperature" name="temperature" placeholder="Enter temperature" step="0.1">
+            <small class="error-message" id="temperature-error"></small>
         </div>
         
         <button type="submit">Predict Battery Health</button>
@@ -187,4 +197,38 @@
     </div>
     {% endif %}
 </div>
+<script>
+    function validateForm() {
+        let isValid = true;
+
+        // Clear previous error messages
+        document.querySelectorAll('.error-message').forEach(msg => msg.textContent = '');
+
+        // Validate capacity
+        const capacity = document.getElementById('capacity').value.trim();
+        if (!capacity || isNaN(capacity) || capacity <= 0) {
+            document.getElementById('capacity-error').textContent = "Please enter a valid capacity (greater than 0).";
+            isValid = false;
+        }
+
+        // Validate voltage
+        const voltage = document.getElementById('voltage').value.trim();
+        if (!voltage || isNaN(voltage) || voltage <= 0) {
+            document.getElementById('voltage-error').textContent = "Please enter a valid voltage (greater than 0).";
+            isValid = false;
+        }
+
+        // Validate temperature
+        const temperature = document.getElementById('temperature').value.trim();
+        if (!temperature || isNaN(temperature)) {
+            document.getElementById('temperature-error').textContent = "Please enter a valid temperature.";
+            isValid = false;
+        } else if (temperature < -50 || temperature > 100) {
+            document.getElementById('temperature-error').textContent = "Temperature should be between -50°C and 100°C.";
+            isValid = false;
+        }
+
+        return isValid;
+    }
+</script>
 {% endblock %}

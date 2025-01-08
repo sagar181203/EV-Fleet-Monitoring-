@@ -10,19 +10,19 @@
             <form id="consumptionForm">
                 <div class="form-group mb-3">
                     <label for="vehicleSelect">Select Vehicle</label>
-                    <select class="form-control" id="vehicleSelect" required>
+                    <select class="form-control" id="vehicleSelect">
                         <option value="">Choose a vehicle...</option>
                     </select>
                 </div>
 
                 <div class="form-group mb-3">
                     <label for="energyUsed">Energy Used (kWh)</label>
-                    <input type="number" class="form-control" id="energyUsed" step="0.1" min="0" required>
+                    <input type="number" class="form-control" id="energyUsed" step="0.1" min="0">
                 </div>
 
                 <div class="form-group mb-3">
                     <label for="distance">Distance Traveled (km)</label>
-                    <input type="number" class="form-control" id="distance" step="0.1" min="0" required>
+                    <input type="number" class="form-control" id="distance" step="0.1" min="0">
                 </div>
 
                 <button type="submit" class="btn btn-primary">Add Consumption Data</button>
@@ -88,9 +88,15 @@ document.addEventListener('DOMContentLoaded', function() {
     loadRecentEntries();
 
     // Handle form submission
-    document.getElementById('consumptionForm').addEventListener('submit', function(e) {
+    const form=document.getElementById('consumptionForm');
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
         
+                // Perform validation
+                if (!validateForm()) {
+            showToast('Please correct the highlighted errors before submitting.', 'error');
+            return;
+        }
         const data = {
             vehicle_id: parseInt(document.getElementById('vehicleSelect').value),
             energy_used: parseFloat(document.getElementById('energyUsed').value),
@@ -119,6 +125,41 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// Form validation function
+function validateForm() {
+    let isValid = true;
+
+    const vehicleSelect = document.getElementById('vehicleSelect');
+    const energyUsed = document.getElementById('energyUsed');
+    const distance = document.getElementById('distance');
+
+    // Reset validation messages
+    vehicleSelect.classList.remove('is-invalid');
+    energyUsed.classList.remove('is-invalid');
+    distance.classList.remove('is-invalid');
+
+    // Validate vehicle selection
+    if (!vehicleSelect.value) {
+        vehicleSelect.classList.add('is-invalid');
+        isValid = false;
+    }
+
+    // Validate energy used
+    if (!energyUsed.value || parseFloat(energyUsed.value) <= 0) {
+        energyUsed.classList.add('is-invalid');
+        isValid = false;
+    }
+
+    // Validate distance
+    if (!distance.value || parseFloat(distance.value) <= 0) {
+        distance.classList.add('is-invalid');
+        isValid = false;
+    }
+
+    return isValid;
+}
+
 
 function loadRecentEntries() {
     const vehicleId = document.getElementById('vehicleSelect').value;

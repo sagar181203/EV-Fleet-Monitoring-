@@ -178,6 +178,23 @@ function updateData() {
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
 
+    // Validate the vehicle selection
+    if (!vehicleId) {
+        alert('Please select a vehicle.');
+        return; // Stop the function execution if no vehicle is selected
+    }
+    
+    // Validate inputs
+    if (!startDate || !endDate) {
+        alert("Please select both start and end dates.");
+        return;
+    }
+
+    if (new Date(startDate) > new Date(endDate)) {
+        alert("Start date cannot be later than end date.");
+        return;
+    }
+    
     // Update summary data
     fetch(`/api/consumption/summary?start_date=${startDate}&end_date=${endDate}`)
         .then(response => response.json())
