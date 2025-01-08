@@ -5,19 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - EV Fleet Monitoring</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .error {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        button {
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body class="auth-page">
     <div class="auth-container">
         <h1>Login</h1>
-        <form method="POST">
+        <form method="POST" onsubmit="return validateLoginForm()">
             <div class="form-group">
                 <label for="uname">Username</label>
-                <input type="text" name="uname" id="uname" required>
+                <input type="text" name="uname" id="uname">
+                <small class="error-message" id="uname-error"></small>
             </div>
             
             <div class="form-group">
                 <label for="passw">Password</label>
-                <input type="password" name="passw" id="passw" required>
+                <input type="password" name="passw" id="passw">
+                <small class="error-message" id="passw-error"></small>
             </div>
             
             {% if error %}
@@ -29,5 +52,35 @@
             <p>Don't have an account? <a href="{{ url_for('register') }}">Register here</a></p>
         </form>
     </div>
+    <script>
+        function validateLoginForm() {
+            let isValid = true;
+
+            // Clear previous error messages
+            document.querySelectorAll('.error-message').forEach(msg => msg.textContent = '');
+
+            // Validate username
+            const uname = document.getElementById('uname').value.trim();
+            if (uname === '') {
+                document.getElementById('uname-error').textContent = "Username is required.";
+                isValid = false;
+            } else if (uname.length < 3 || uname.length > 15) {
+                document.getElementById('uname-error').textContent = "Username must be between 3 and 15 characters.";
+                isValid = false;
+            }
+
+            // Validate password
+            const passw = document.getElementById('passw').value;
+            if (passw === '') {
+                document.getElementById('passw-error').textContent = "Password is required.";
+                isValid = false;
+            } else if (passw.length < 6) {
+                document.getElementById('passw-error').textContent = "Password must be at least 6 characters.";
+                isValid = false;
+            }
+
+            return isValid;
+        }
+    </script>  
 </body>
 </html>
